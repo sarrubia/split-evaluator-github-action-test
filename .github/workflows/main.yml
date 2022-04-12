@@ -7,14 +7,35 @@ jobs:
     steps:
       - name: Evaluate action step
         id: evaluator
-        uses: sarrubia/split-evaluator-github-action@v0.1
+        uses: sarrubia/split-evaluator-github-action@v0.7
         with:
           api-key: ${{ secrets.SPLIT_API_KEY }}
-          key: "some-key"
-          split: "enable_paywall"
+          key: ${{ secrets.SPLIT_EVAL_KEY }}
+          splits: '["enable_paywall", "api_verbose"]'
+
       # Use the output from the `evaluator` step
       - name: Get the output evaluation
         run: echo "The result was ${{ steps.evaluator.outputs.result }}"
       # Use the env vars from the `evaluator` step
       - name: Get the env vars from evaluation
         run: echo "The env enable_paywall  ${{ env.enable_paywall }}"
+      
+      # Use the env vars from the `evaluator` step to run or not this step
+      - name: Run only when treatment ON
+        if: ${{ env.enable_paywall == 'on' }}
+        run: echo "The evaluation was ON"
+
+      # Use the env vars from the `evaluator` step to run or not this step
+      - name: Run only when treatment OFF
+        if: ${{ env.enable_paywall == 'off' }}
+        run: echo "The evaluation was OFF"
+      
+      # Use the env vars from the `evaluator` step to run or not this step
+      - name: Run only when API Verbose is legacy
+        if: ${{ env.api_verbose == 'legacy' }}
+        run: echo "Calling API Verbose legacy"
+
+      # Use the env vars from the `evaluator` step to run or not this step
+      - name: Run only when API Verbose is V2
+        if: ${{ env.api_verbose == 'v2' }}
+        run: echo "Calling API Verbose V2"
