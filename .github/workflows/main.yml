@@ -1,0 +1,20 @@
+on: [push]
+
+jobs:
+  split_evaluator_test:
+    runs-on: ubuntu-latest
+    name: A job to test the Split evaluator github action
+    steps:
+      - name: Evaluate action step
+        id: evaluator
+        uses: sarrubia/split-evaluator-github-action@v0.1
+        with:
+          api-key: ${{ secrets.SPLIT_API_KEY }}
+          key: "some-key"
+          split: "enable_paywall"
+      # Use the output from the `evaluator` step
+      - name: Get the output evaluation
+        run: echo "The result was ${{ steps.evaluator.outputs.result }}"
+      # Use the env vars from the `evaluator` step
+      - name: Get the env vars from evaluation
+        run: echo "The env enable_paywall  ${{ env.enable_paywall }}"
