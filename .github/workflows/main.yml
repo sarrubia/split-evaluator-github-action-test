@@ -5,6 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     name: A job to test the Split tracker github action
     steps:
+      - name: Get current millis
+        id: date
+        run: echo "::set-output name=start_millis::$(($(date +'%s%N')/1000000))"
       - name: Tracker action step
         id: tracker
         uses: sarrubia/split-tracker-gha@v0.1
@@ -13,7 +16,7 @@ jobs:
           key: ${{ secrets.SPLIT_EVAL_KEY }}
           traffic-type: user
           event-type: some_metric
-          value: 5
+          value: ${{ steps.date.outputs.start_millis }}
           properties: '{"package":"premium", "admin":true}'
 
   split_evaluator_test:
