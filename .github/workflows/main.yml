@@ -1,17 +1,35 @@
 on: [push]
 
 jobs:
+  split_tracker_test:
+    runs-on: ubuntu-latest
+    name: A job to test the Split tracker github action
+    steps:
+      - name: Tracker action step
+        id: tracker
+        uses: sarrubia/split-tracker-gha@v0.1
+        with:
+          api-key: ${{ secrets.SPLIT_API_KEY }}
+          key: ${{ secrets.SPLIT_EVAL_KEY }}
+          traffic-type: user
+          event-type: some_metric
+          value: 5
+          properties: '{"package":"premium", "admin":true}'
+
   split_evaluator_test:
     runs-on: ubuntu-latest
     name: A job to test the Split evaluator github action
     steps:
       - name: Evaluate action step
         id: evaluator
-        uses: sarrubia/split-evaluator-github-action@v0.7
+        uses: sarrubia/split-evaluator-github-action@v1.0-rc3
         with:
           api-key: ${{ secrets.SPLIT_API_KEY }}
           key: ${{ secrets.SPLIT_EVAL_KEY }}
-          splits: '["enable_paywall", "api_verbose"]'
+          #splits: '["enable_paywall", "api_verbose"]'
+          splits: |
+            enable_paywall
+            api_verbose
 
       # Use the output from the `evaluator` step
       - name: Get the output evaluation
@@ -39,3 +57,13 @@ jobs:
       - name: Run only when API Verbose is V2
         if: ${{ env.api_verbose == 'v2' }}
         run: echo "Calling API Verbose V2"
+
+    outputs:
+      evaluator_treatments: ${{ steps.evaluator.outputs.result }}
+
+  another_job:
+    needs: split_evaluator_test
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'FROM split_evaluator_test enable_paywall is ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).enable_paywall }}'
+      - run: echo 'FROM split_evaluator_test api_verbose is ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).api_verbose }}'
