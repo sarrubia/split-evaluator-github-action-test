@@ -1,35 +1,16 @@
 on: [push]
 
 jobs:
-  split_tracker_test:
-    runs-on: ubuntu-latest
-    name: A job to test the Split tracker github action
-    steps:
-      - name: Get current millis
-        id: date
-        run: echo "::set-output name=start_millis::$(($(date +'%s%N')/1000000))"
-      - name: Tracker action step
-        id: tracker
-        uses: sarrubia/split-tracker-gha@v0.1
-        with:
-          api-key: ${{ secrets.SPLIT_API_KEY }}
-          key: ${{ secrets.SPLIT_EVAL_KEY }}
-          traffic-type: user
-          event-type: some_metric
-          value: ${{ steps.date.outputs.start_millis }}
-          properties: '{"package":"premium", "admin":true}'
-
   split_evaluator_test:
     runs-on: ubuntu-latest
     name: A job to test the Split evaluator github action
     steps:
       - name: Evaluate action step
         id: evaluator
-        uses: sarrubia/split-evaluator-github-action@v1.0-rc3
+        uses: sarrubia/split-evaluator-github-action@v1.0-rc6
         with:
           api-key: ${{ secrets.SPLIT_API_KEY }}
           key: ${{ secrets.SPLIT_EVAL_KEY }}
-          #splits: '["enable_paywall", "api_verbose"]'
           splits: |
             enable_paywall
             api_verbose
@@ -70,3 +51,17 @@ jobs:
     steps:
       - run: echo 'FROM split_evaluator_test enable_paywall is ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).enable_paywall }}'
       - run: echo 'FROM split_evaluator_test api_verbose is ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).api_verbose }}'
+      # Use the env vars from the `evaluator` step to run or not this step
+      - name: Run only when API Verbose is legacy
+        if: ${{ env.api_verbose == 'legacy' }}
+        run: echo ".... Calling API Verbose legacy ...."
+      # Use the env vars from the `evaluator` step to run or not this step
+      - name: Run only when treatment ON
+        if: ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).enable_paywall == 'on' }}
+        run: echo ">>>> The evaluation was ON"
+
+      # Use the env vars from the `evaluator` step to run or not this step
+      - name: Run only when treatment OFF
+        if: ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).enable_paywall == 'off' }}
+        run: echo ">>>> The evaluation was OFF"
+
