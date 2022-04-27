@@ -46,7 +46,7 @@ jobs:
       evaluator_treatments: ${{ steps.evaluator.outputs.result }}
 
   conditional_job:
-    needs: [split_evaluator_test, conditional_job]
+    needs: split_evaluator_test
     runs-on: ubuntu-latest
     if: ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).enable_paywall == 'on' }}
     steps:
@@ -54,7 +54,7 @@ jobs:
         run: echo "Running conditional JOB!"
 
   another_job:
-    needs: split_evaluator_test
+    needs: [split_evaluator_test, conditional_job]
     runs-on: ubuntu-latest
     steps:
       - run: echo 'FROM split_evaluator_test enable_paywall is ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).enable_paywall }}'
