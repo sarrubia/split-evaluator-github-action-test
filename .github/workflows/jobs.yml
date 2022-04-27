@@ -4,6 +4,9 @@ jobs:
     split_evaluator:
       runs-on: ubuntu-latest
       name: A job to run the Split evaluator github action
+      # The job outputs must be sets in order to share the evaluation results
+      outputs:
+        treatments: ${{ steps.evaluator.outputs.result }}
       steps:
         - name: Evaluate action step
           id: evaluator
@@ -14,9 +17,9 @@ jobs:
             splits: |
                 canary_deploy
                 integration_tests_v2
-        # The job outputs must be sets in order to share the evaluation results
-      outputs:
-        treatments: ${{ steps.evaluator.outputs.result }}
+
+        - name: Debug output
+          run: echo ${{ steps.evaluator.outputs.result }}
 
     testing:
         needs: split_evaluator
