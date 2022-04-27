@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: Evaluate action step
         id: evaluator
-        uses: sarrubia/split-evaluator-github-action@v1.0-rc6
+        uses: sarrubia/split-evaluator-github-action@v1.0-rc7
         with:
           api-key: ${{ secrets.SPLIT_API_KEY }}
           key: ${{ secrets.SPLIT_EVAL_KEY }}
@@ -45,16 +45,20 @@ jobs:
     outputs:
       evaluator_treatments: ${{ steps.evaluator.outputs.result }}
 
+  conditional_job:
+    needs: split_evaluator_test
+    runs-on: ubuntu-latest
+    if: ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).enable_paywall == 'on' }}
+    steps:
+      - name: First step of conditional job
+        run: echo "Running conditional JOB!"
+
   another_job:
     needs: split_evaluator_test
     runs-on: ubuntu-latest
     steps:
       - run: echo 'FROM split_evaluator_test enable_paywall is ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).enable_paywall }}'
       - run: echo 'FROM split_evaluator_test api_verbose is ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).api_verbose }}'
-      # Use the env vars from the `evaluator` step to run or not this step
-      - name: Run only when API Verbose is legacy
-        if: ${{ env.api_verbose == 'legacy' }}
-        run: echo ".... Calling API Verbose legacy ...."
       # Use the env vars from the `evaluator` step to run or not this step
       - name: Run only when treatment ON
         if: ${{ fromJson(needs.split_evaluator_test.outputs.evaluator_treatments).enable_paywall == 'on' }}
