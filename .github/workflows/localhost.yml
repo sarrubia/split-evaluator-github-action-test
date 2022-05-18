@@ -1,0 +1,23 @@
+on: [push]
+
+jobs:
+  split_evaluator_local:
+    runs-on: ubuntu-latest
+    name: A job to test the Split evaluator github action
+    steps:
+      - name: WORKSPACE
+        run: echo ${{ GITHUB_WORKSPACE }}
+
+      - name: Evaluate action step
+        id: evaluator
+        uses: sarrubia/split-evaluator-github-action@v1.1-rc1
+        with:
+          api-key: 'localhost'
+          key: ${{ secrets.SPLIT_EVAL_KEY }}
+          splits: |
+            enable_paywall
+            api_verbose
+
+      # Use the output from the `evaluator` step
+      - name: Get the output evaluation
+        run: echo "The result was ${{ steps.evaluator.outputs.result }}"
