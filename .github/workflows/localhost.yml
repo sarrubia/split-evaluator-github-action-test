@@ -6,7 +6,7 @@ jobs:
     name: A job to test the Split evaluator github action
     steps:
       - name: WORKSPACE
-        run: echo ${{ GITHUB_WORKSPACE }}
+        run: echo ${{ env.GITHUB_WORKSPACE }}
 
       - name: Evaluate action step
         id: evaluator
