@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: Evaluate action step
         id: evaluator
-        uses: sarrubia/split-evaluator-github-action@v1.0-rc7
+        uses: splitio/split-evaluator-action@v1.0-rc1
         with:
           api-key: ${{ secrets.SPLIT_API_KEY }}
           key: ${{ secrets.SPLIT_EVAL_KEY }}

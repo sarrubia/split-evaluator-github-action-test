@@ -13,7 +13,7 @@ jobs:
 
       - name: Evaluate action step
         id: evaluator
-        uses: sarrubia/split-evaluator-github-action@v1.1-rc1
+        uses: splitio/split-evaluator-action@v1.0-rc1
         with:
           api-key: 'localhost'
           key: ${{ secrets.SPLIT_EVAL_KEY }}
